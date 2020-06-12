@@ -36,13 +36,30 @@ class App extends Component {
       box: {},
       route: 'signin',
       isSignedIn: false,
+      user : {
+        id: '',
+        name: '',
+        email: '',
+        entries: 0,
+        joined: ''
+      }
     }
   }
 
-  componentDidMount() {
-    fetch('http://localhost:3000/')
-    .then(response => response.json())
-    .then(console.log());
+  // componentDidMount() {
+  //   fetch('http://localhost:3000/')
+  //   .then(response => response.json())
+  //   .then(console.log());
+  // }
+
+  loadUser = (data) => {
+    this.setState({ user : {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      entries: data.entries,
+      joined: data.joined
+    }})
   }
 
   calculateFaceLocation = (response) => {
@@ -71,9 +88,24 @@ class App extends Component {
     this.setState({ imageURL: this.state.input});
     app.models.predict(Clarifai.FACE_DETECT_MODEL, 
     this.state.input)
-    .then(response => this.displayFaceBox(this.calculateFaceLocation(response)))
-    .catch(err => console.log(err));
-  }
+    .then(response => {
+      if (response) {
+        fetch('http://localhost:3000/image', {
+          method: 'put',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+          id: this.state.user.id
+          })
+        })
+        .then(response => response.json())
+        .then(count => {
+          this.setState(Object.assign(this.state.user, { entries: count}))
+        })
+      }
+      this.displayFaceBox(this.calculateFaceLocation(response))
+    })
+      .catch(err => console.log(err));
+    }
 
   onRouteChange = (route) => {
     if (route === 'signout') {
@@ -95,7 +127,7 @@ class App extends Component {
         ?
           <div> 
             <Logo />
-            <Rank />
+            <Rank name={this.state.user.name} entries={this.state.user.entries} />
             <ImageLinkForm onInputChange={this.onInputChange} onButtonSubmit={this.onButtonSubmit}/>
             <FaceRecognition box={this.state.box} imageURL={this.state.imageURL}/>
           </div> 
@@ -103,9 +135,9 @@ class App extends Component {
         (
           this.state.route === 'signin'
           ? 
-          <SignIn onRouteChange={this.onRouteChange} />
+          <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
           :
-          <Register onRouteChange={this.onRouteChange} />
+          <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
         )
         
         }
