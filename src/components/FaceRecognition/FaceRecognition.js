@@ -6,7 +6,7 @@ const FaceRecognition = ({imageURL, box}) => {
         <div className="center ma">
             <div className="absolute mt2">
                 {/*eslint-disable-next-line*/ } 
-                <img id="inputimage" alt="The image at the URL you just entered will show up here!" src={imageURL} width='500px' height='auto'/>
+                <img id="inputimage" src={imageURL} width='500px' height='auto'/>
                 <div className="bounding-box" style={{top: box.topRow, right: box.rightCol, bottom: box.bottomRow, left: box.leftCol}}></div>
             </div>
         </div>
